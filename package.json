@@ -4,9 +4,6 @@
   "description": "Create API for Social Media Kifeb",
   "type": "module",
   "main": "index.js",
-  "engines": {
-    "node": "16.x"
-  },
   "scripts": {
     "start": "node .",
     "dev": "nodemon .",
@@ -17,7 +14,7 @@
     "media sosial",
     "kifebmed"
   ],
-  "author": "",
+  "author": "kifeb",
   "license": "ISC",
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -28,9 +25,11 @@
     "jsonwebtoken": "^8.5.1",
     "moment": "^2.29.4",
     "multer": "^1.4.5-lts.1",
-    "mysql2": "^2.3.3"
+    "mysql2": "^2.3.3",
+    "sequelize": "^6.25.8"
   },
   "devDependencies": {
-    "nodemon": "^2.0.20"
+    "nodemon": "^2.0.20",
+    "sequelize-cli": "^6.5.2"
   }
 }

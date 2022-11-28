@@ -1,60 +1,67 @@
-import { db } from "../../config/db.mjs";
+import Users from "../../models/users.model.js"
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
 export const register = async (req, res) => {
     // Check user if exists
-    const query = "SELECT * FROM users WHERE username = ?"
+    const {username, email, password, name} = req.body
 
-    db.query(query, [req.body.username], (err, data) => {
-        
-        if(err) return res.status(500).json(err);
-        if(data.length) return res.status(409).json({msg: "User already exist"});
-        
-        //Create User and HASH
-        const salt = bcrypt.genSaltSync(10);
-        const hashedPassword = bcrypt.hashSync(req.body.password, salt); 
-        
-        const queryInsert = "INSERT INTO users (`username`, `email`, `password`,`name`) VALUE (?)";
-
-        const datas = [
-            req.body.username,
-            req.body.email,
-            hashedPassword,
-            req.body.name,
-        ];
-
-        db.query(queryInsert, [datas], (err, data) => {
-            if(err) return res.status(500).json({msg: err.message});
-            return res.status(200).json({msg: "User has been created", data})
+    try {
+        const userName = await Users.findOne({
+            where: {
+                username: username
+            },
         })
-    });
+        if(userName != null) return res.status(409).json({msg: 'User already Exist'})
+
+        const salt = bcrypt.genSaltSync(10);
+        const hashedPassword = bcrypt.hashSync(password, salt);
+        console.log(hashedPassword)
+
+        const user = await Users.create({
+            username,
+            email,
+            password: hashedPassword,
+            name
+        })
+        return res.status(200).json({msg: "User has been created", data: user})
+    } catch (error) {
+        return res.status(500).json({msg: error.message});
+    }
 };
 
 
-export const login = (req, res) => {
+export const login = async (req, res) => {
     
     // Check user if exists
-    const query = "SELECT * FROM users WHERE username = ?"
+        const user = await Users.findOne({
+            where: {
+                username: req.body.username
+            },
+        })
 
-    db.query(query, [req.body.username], (err, data) => {
-        if(err) return res.status(500).json(err);
-        if(data.length === 0) return res.status(404).json({msg: "User not found"});
 
-        //Compare password
-        const checkPassword = bcrypt.compareSync(req.body.password, data[0].password);
+        if(!user) return res.status(409).json({msg: 'user not found'});
 
-        if (!checkPassword) return res.status(400).json({msg: "Wrong password or username"});
+        const checkPassword = bcrypt.compareSync(req.body.password, user.password);
+        if(!checkPassword) return res.status(400).json({msg: "Wrong password or username"});
 
-        const token = jwt.sign({id: data[0].id}, "secretKey");
+        const token = jwt.sign({id: user.id}, "secretKey");
 
-        const {password, ...other } = data[0];
+        const {id, username, email, name, coverPic, profilePic, city, website} = user;
 
         res.cookie("accessToken", token, {
-            httpOnly: true,
-        }).status(200).json(other)
-
-    })
+            httpOnly: true
+        }).status(200).json({
+            id,
+            username,
+            email,
+            name,
+            coverPic,
+            profilePic,
+            city,
+            website
+        });
 };
 
 

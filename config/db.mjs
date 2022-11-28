@@ -1,8 +1,16 @@
-import mysql from 'mysql2'
+import { Sequelize } from "sequelize";
+import mysql from "mysql2";
 
-export const db = mysql.createConnection({
-    host:process.env.DB_HOST,
-    user:process.env.DB_USER,
-    password:process.env.DB_PASSWORD,
-    database:process.env.DB_NAME
-  })
+const db = new Sequelize("social_test", "root", "Kifeb99##", {
+  host: "localhost",
+  dialect: "mysql"
+})
+
+export const database = mysql.createConnection({
+  database: "social_test",
+  user: "root",
+  password: "Kifeb99##",
+  host: "localhost"
+})
+
+export default db;

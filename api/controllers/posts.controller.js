@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
 import moment from "moment";
-import {db} from "../../config/db.mjs"
+import { database } from "../../config/db.mjs";
+import Posts from "../../models/posts.models.js";
 
 export const getPosts = (req, res) => {
     
@@ -8,7 +9,7 @@ export const getPosts = (req, res) => {
     const token = req.cookies.accessToken;
     if(!token) return res.status(401).json("Not logged in!");
 
-    jwt.verify(token, process.env.SECRET_KEY, (err, userInfo) => {
+    jwt.verify(token, "secretKey", async (err, userInfo) => {
         if (err) return res.status(403).json("Invalid Token");
 
         const query = userId != "undefined"
@@ -17,7 +18,7 @@ export const getPosts = (req, res) => {
 
         const values = userId != "undefined" ? [userId] : [userInfo.id, userInfo.id]
 
-        db.query(query, values, (err, data) => {
+        database.query(query, values, (err, data) => {
             if (err) return res.status(500).json(err);
             return res.status(200).json(data);
         })
@@ -30,22 +31,22 @@ export const addPost = (req, res) => {
     const token = req.cookies.accessToken;
     if(!token) return res.status(401).json("Not logged in!");
 
-    jwt.verify(token, process.env.SECRET_KEY, (err, userInfo) => {
+    jwt.verify(token, "secretKey", async (err, userInfo) => {
         if (err) return res.status(403).json("Invalid Token");
 
-        const query = "INSERT INTO posts(`desc`, `img`, `createdAt`, `userId`) VALUES (?)";
+        const {desc, img} = req.body
 
-        const values = [
-            req.body.desc,
-            req.body.img,
-            moment(Date.now()).format("YYYY-MM-DD HH:mm:ss"),
-            userInfo.id
-        ]
-
-        db.query(query, [values] ,(err, data) => {
-            if (err) return res.status(500).json(err);
-            return res.status(200).json("Post has been Created");
-        })
+        try {
+            const post = await Posts.create({
+                desc,
+                img,
+                createdAt: moment(Date.now()).format("YYYY-MM-DD HH:mm:ss"),
+                userId: userInfo.id
+            })
+            return res.status(201).json({msg: "success posting"});
+        } catch (error) {
+            return res.status(500).json({msg: error.message})
+        }
     })
 
 }
@@ -55,12 +56,12 @@ export const deletePost = (req, res) => {
     const token = req.cookies.accessToken;
     if(!token) return res.status(401).json("Not logged in!");
 
-    jwt.verify(token, process.env.SECRET_KEY, (err, userInfo) => {
+    jwt.verify(token, "secretKey", (err, userInfo) => {
         if (err) return res.status(403).json("Invalid Token");
 
         const query = "DELETE FROM posts WHERE `id` = ? AND `userId` = ?";
 
-        db.query(query, [req.params.id, userInfo.id] ,(err, data) => {
+        database.query(query, [req.params.id, userInfo.id] ,(err, data) => {
             if (err) return res.status(500).json(err);
             if(data.affectedRows > 0) return res.status(200).json("deleted");
             return res.status(403).json("You can delete only your post");
