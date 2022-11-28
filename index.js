@@ -69,4 +69,4 @@ app.use("/api/likes", likeRoutes)
 app.use("/api/comments", commentRoutes)
 app.use("/api/relationships", relationshipRoutes)
 
-app.listen(PORT, () => console.log("API Connected On Port" + PORT))
+app.listen(PORT, () => console.log("API Connected On Port"))
