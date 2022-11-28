@@ -30,11 +30,10 @@ app.use(express.urlencoded({extended: true}));
 app.use("/assets", express.static('/public/upload'))
 app.use((req, res, next) => {
 	res.header("Access-Control-Allow-Credentials", true);
-	res.header("Access-Control-Allow-Origin", true);
 	next();
   });
 app.use(cors({
-	origin: "*",
+	origin: "http://localhost:3000",
 }));
 app.use(cookieParser())
 
@@ -70,4 +69,4 @@ app.use("/api/likes", likeRoutes)
 app.use("/api/comments", commentRoutes)
 app.use("/api/relationships", relationshipRoutes)
 
-app.listen(PORT, () => console.log("API Connected"))
+app.listen(PORT, () => console.log("API Connected On Port" + PORT))
