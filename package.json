@@ -4,6 +4,9 @@
   "description": "Create API for Social Media Kifeb",
   "type": "module",
   "main": "index.js",
+  "engines": {
+    "node": "16.x"
+  },
   "scripts": {
     "start": "node .",
     "dev": "nodemon .",
